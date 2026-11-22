@@ -1,0 +1,45 @@
+id: "mt_hl"
+name: "Mushoku Tensei — Human Language [HL] (Basque Cipher)"
+version: "0.2.0"
+description: "Language Pack for Mushoku Tensei Human Language ([HL]) handwritten calligraphy mapped via consonant Atbash cipher to Basque (eu)."
+language_class: "cipher"
+source_lang_code: "mt_hl"
+intermediate_lang_code: "eu"
+
+script:
+  direction: "ltr"
+  renderer: "sprites"
+  glyphs_dir: "glyphs"
+  glyphs_meta: "glyphs_meta.yaml"
+  font_path: null
+  script_type: "alphabet"
+  charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,;:!?-"
+  case_sensitive: true
+
+detection:
+  default_detector: "dbnet"
+  granularity: "line"
+  text_threshold: 0.70
+  link_threshold: 0.40
+  low_text: 0.40
+  db_thresh: 0.30
+  db_box_thresh: 0.60
+  db_unclip_ratio: 1.60
+
+recognition:
+  default_backend: "vlm_peft"
+  onnx_model_path: null
+  vlm_base_model: "Qwen/Qwen2.5-VL-3B-Instruct"
+  vlm_adapter_path: "models/vlm_lora"
+  vlm_prompt: "Transcribe the Mushoku Tensei Human Language calligraphy in this image directly into Basque Latin letters. Return only the transcribed text."
+
+postprocess:
+  enabled: true
+  module_path: "postprocess.py"
+
+translation:
+  pivot_via_en: true
+  glossary_path: "glossary.json"
+  grammar_path: "grammar.md"
+  conlang_lora_path: null
+  lora_base_model: null

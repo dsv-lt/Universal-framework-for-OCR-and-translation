@@ -12,6 +12,7 @@ packs/*/models/
 packs/*/checkpoints/
 packs/*/datasets/
 packs/_example_demo/glyphs/*.png
+packs/mt_hl/glyphs/*.png
 models/
 datasets/
 outputs/

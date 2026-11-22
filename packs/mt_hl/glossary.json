@@ -1,0 +1,186 @@
+[
+  {
+    "term": "Rudeus",
+    "en": "Rudeus",
+    "pos": "proper_noun",
+    "variants": ["Rudeusen", "Rudeusi", "Rudeusek"],
+    "is_proper_noun": true,
+    "notes": "Main protagonist name; preserve verbatim."
+  },
+  {
+    "term": "Greyrat",
+    "en": "Greyrat",
+    "pos": "proper_noun",
+    "variants": ["Greyraten"],
+    "is_proper_noun": true,
+    "notes": "Family surname; preserve verbatim."
+  },
+  {
+    "term": "Paul",
+    "en": "Paul",
+    "pos": "proper_noun",
+    "variants": ["Paulen"],
+    "is_proper_noun": true,
+    "notes": "Character name; preserve verbatim."
+  },
+  {
+    "term": "Zenith",
+    "en": "Zenith",
+    "pos": "proper_noun",
+    "variants": ["Zenithen"],
+    "is_proper_noun": true,
+    "notes": "Character name; preserve verbatim."
+  },
+  {
+    "term": "Roxy",
+    "en": "Roxy",
+    "pos": "proper_noun",
+    "variants": ["Roxyren", "Migurdia"],
+    "is_proper_noun": true,
+    "notes": "Character name; preserve verbatim."
+  },
+  {
+    "term": "Sylphiette",
+    "en": "Sylphiette",
+    "pos": "proper_noun",
+    "variants": ["Sylphy", "Sylphietten"],
+    "is_proper_noun": true,
+    "notes": "Character name; preserve verbatim."
+  },
+  {
+    "term": "Eris",
+    "en": "Eris",
+    "pos": "proper_noun",
+    "variants": ["Boreas", "Erisen"],
+    "is_proper_noun": true,
+    "notes": "Character name; preserve verbatim."
+  },
+  {
+    "term": "Ruijerd",
+    "en": "Ruijerd",
+    "pos": "proper_noun",
+    "variants": ["Superdia", "Ruijerden"],
+    "is_proper_noun": true,
+    "notes": "Character/race name; preserve verbatim."
+  },
+  {
+    "term": "Orsted",
+    "en": "Orsted",
+    "pos": "proper_noun",
+    "variants": ["Orsteden"],
+    "is_proper_noun": true,
+    "notes": "Dragon God name; preserve verbatim."
+  },
+  {
+    "term": "Hitogami",
+    "en": "Hitogami (Man-God)",
+    "pos": "proper_noun",
+    "variants": ["Hitogamiren"],
+    "is_proper_noun": true,
+    "notes": "Deity name; preserve verbatim."
+  },
+  {
+    "term": "Perugius",
+    "en": "Perugius",
+    "pos": "proper_noun",
+    "variants": ["Kishirika"],
+    "is_proper_noun": true,
+    "notes": "Historical/legendary figure; preserve verbatim."
+  },
+  {
+    "term": "Fittoa",
+    "en": "Fittoa",
+    "pos": "proper_noun",
+    "variants": ["Asura", "Millis", "Ranoa", "Sharia", "Buena", "Roa", "Rikarisu", "Shirone"],
+    "is_proper_noun": true,
+    "notes": "Mushoku Tensei world/place proper noun; preserve verbatim."
+  },
+  {
+    "term": "magia",
+    "en": "magic",
+    "pos": "noun",
+    "variants": ["magiko", "magikoa", "magikoak", "magikoek", "magikoen"],
+    "is_proper_noun": false,
+    "notes": "Basque magic domain term."
+  },
+  {
+    "term": "kristal",
+    "en": "crystal",
+    "pos": "noun",
+    "variants": ["kristalak", "kristalaren"],
+    "is_proper_noun": false,
+    "notes": "Magic crystal."
+  },
+  {
+    "term": "harri",
+    "en": "stone / magic stone",
+    "pos": "noun",
+    "variants": ["harria", "harriak", "harriko"],
+    "is_proper_noun": false,
+    "notes": "Magic stone (mana stone)."
+  },
+  {
+    "term": "sorginkeria",
+    "en": "sorcery / spell / incantation",
+    "pos": "noun",
+    "variants": ["sorginkeriak", "sorginkeriazko"],
+    "is_proper_noun": false,
+    "notes": "Spellcasting / witchcraft."
+  },
+  {
+    "term": "zirkulu",
+    "en": "magic circle",
+    "pos": "noun",
+    "variants": ["zirkulua", "zirkuluak", "eraztun"],
+    "is_proper_noun": false,
+    "notes": "Summoning/magic circle."
+  },
+  {
+    "term": "barrutia",
+    "en": "barrier / warded area",
+    "pos": "noun",
+    "variants": ["barruti"],
+    "is_proper_noun": false,
+    "notes": "Protective barrier / zone."
+  },
+  {
+    "term": "gradu",
+    "en": "rank / tier / grade",
+    "pos": "noun",
+    "variants": ["gradua", "graduen", "maila", "mailak"],
+    "is_proper_noun": false,
+    "notes": "Magic tiers: oinarrizko (elementary), bitartekoa (intermediate), aurreratua (advanced), santua (saint), erregea (king), enperadorea (emperor), jainkozkoa (god)."
+  },
+  {
+    "term": "makila",
+    "en": "staff / wand",
+    "pos": "noun",
+    "variants": ["makilak"],
+    "is_proper_noun": false,
+    "notes": "Magic staff."
+  },
+  {
+    "term": "sendatu",
+    "en": "heal / healing",
+    "pos": "verb",
+    "variants": ["sendatze", "sendatzea", "sendatzeko", "zauria", "detoxifikatu"],
+    "is_proper_noun": false,
+    "notes": "Healing magic."
+  },
+  {
+    "term": "aldarikatu",
+    "en": "chant / invoke / cast",
+    "pos": "verb",
+    "variants": ["aldarikatzeko", "aktibatu", "aktibatzeko"],
+    "is_proper_noun": false,
+    "notes": "Incantation / activation."
+  },
+  {
+    "term": "apurtu",
+    "en": "break / shatter / broken",
+    "pos": "verb",
+    "variants": ["apurtuta", "hondatu", "hondatuta"],
+    "is_proper_noun": false,
+    "notes": "Common in damaged spellbooks or broken items."
+  }
+]
