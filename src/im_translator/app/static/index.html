@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>im_Translator — Fictional & Rare Script OCR + Translation</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <div>
+        <h1>im_Translator</h1>
+        <p class="subtitle">Modular OCR &amp; Translation Framework via Language Packs</p>
+      </div>
+    </div>
+    <nav class="tabs" id="main-tabs">
+      <button class="tab-btn active" data-tab="recognize">Recognize &amp; Translate</button>
+      <button class="tab-btn" data-tab="packs">Pack Studio</button>
+      <button class="tab-btn" data-tab="synth">Synth &amp; Train</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
+    </nav>
+    <div class="health-pill" id="health-pill">Checking...</div>
+  </header>
+
+  <main class="container">
+    <!-- TAB 1: RECOGNIZE & TRANSLATE -->
+    <section class="tab-panel active" id="tab-recognize">
+      <div class="grid-2col">
+        <div class="card controls-card">
+          <h2>1. Вход и настройки пайплайна</h2>
+
+          <label class="field">
+            <span>Изображение (кадр / скан / страница)</span>
+            <input type="file" id="rec-file" accept="image/*" />
+          </label>
+          <div class="row-actions">
+            <button type="button" class="btn btn-secondary" id="btn-load-demo-img">
+              Сгенерировать тестовый кадр из Pack
+            </button>
+          </div>
+
+          <label class="field">
+            <span>Language Pack (<code>--lang</code>)</span>
+            <select id="rec-pack"></select>
+          </label>
+
+          <div class="split-2">
+            <label class="field">
+              <span>Детектор (Стадия 1)</span>
+              <select id="rec-detector">
+                <option value="craft">CRAFT (ONNX)</option>
+                <option value="dbnet">DBNet++ (ONNX)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Гранулярность</span>
+              <select id="rec-granularity">
+                <option value="line">line (строки)</option>
+                <option value="block">block (блоки)</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="craft-params" class="param-group">
+            <div class="split-3">
+              <label class="field">
+                <span>text_thresh</span>
+                <input type="number" id="det-text-thresh" value="0.70" min="0.05" max="0.99" step="0.05" />
+              </label>
+              <label class="field">
+                <span>link_thresh</span>
+                <input type="number" id="det-link-thresh" value="0.40" min="0.05" max="0.99" step="0.05" />
+              </label>
+              <label class="field">
+                <span>low_text</span>
+                <input type="number" id="det-low-text" value="0.40" min="0.05" max="0.99" step="0.05" />
+              </label>
+            </div>
+          </div>
+
+          <div id="dbnet-params" class="param-group hidden">
+            <div class="split-3">
+              <label class="field">
+                <span>db_thresh</span>
+                <input type="number" id="det-db-thresh" value="0.30" min="0.05" max="0.99" step="0.05" />
+              </label>
+              <label class="field">
+                <span>box_thresh</span>
+                <input type="number" id="det-db-box-thresh" value="0.60" min="0.05" max="0.99" step="0.05" />
+              </label>
+              <label class="field">
+                <span>unclip</span>
+                <input type="number" id="det-db-unclip" value="1.60" min="1.0" max="5.0" step="0.1" />
+              </label>
+            </div>
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="rec-fallback" checked />
+            <span>Contour fallback (если веса craft.onnx / dbnet.onnx ещё не загружены)</span>
+          </label>
+
+          <div class="split-2">
+            <label class="field">
+              <span>OCR-бэкенд (Стадия 2)</span>
+              <select id="rec-backend">
+                <option value="onnx_ocr">ONNX OCR (PARSeq/SVTR)</option>
+                <option value="vlm_peft">VLM PEFT (Qwen-VL + LoRA)</option>
+                <option value="vlm_llamacpp">VLM llama.cpp (Server)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Целевой язык перевода</span>
+              <select id="rec-target-lang">
+                <option value="ru">Russian (ru)</option>
+                <option value="en">English (en)</option>
+                <option value="ja">Japanese (ja)</option>
+                <option value="de">German (de)</option>
+                <option value="fr">French (fr)</option>
+                <option value="es">Spanish (es)</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="checkbox-row" id="postprocess-toggle-row">
+            <input type="checkbox" id="rec-postprocess" checked />
+            <span>Промежуточный слой (<code>postprocess.py</code>)</span>
+          </label>
+          <p class="muted" id="postprocess-hint"></p>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="rec-skip-trans" />
+            <span>Только детекция + OCR (пропустить запрос к LLM-переводчику)</span>
+          </label>
+
+          <div class="row-actions">
+            <button type="button" class="btn btn-secondary" id="btn-detect">1. Найти области (Detect)</button>
+            <button type="button" class="btn btn-primary" id="btn-run-pipeline">2. Запустить пайплайн</button>
+          </div>
+          <div class="status-banner hidden" id="rec-status"></div>
+        </div>
+
+        <div class="card">
+          <h2>2. Интерактивные полигоны и выпрямленные кропы</h2>
+          <p class="muted">Кликните по полигону на холсте, чтобы включить/исключить регион перед OCR.</p>
+          <div class="canvas-wrap">
+            <canvas id="detect-canvas"></canvas>
+          </div>
+          <div class="crops-strip" id="crops-strip"></div>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <h2>3. Результат по стадиям</h2>
+        <div class="stages-grid">
+          <div class="stage-box">
+            <h3>Raw OCR</h3>
+            <textarea id="out-raw" rows="5" readonly></textarea>
+          </div>
+          <div class="stage-box">
+            <h3>Postprocessed</h3>
+            <textarea id="out-post" rows="5" readonly></textarea>
+          </div>
+          <div class="stage-box">
+            <h3>EN Pivot</h3>
+            <textarea id="out-en" rows="5" readonly></textarea>
+          </div>
+          <div class="stage-box">
+            <h3>Target Translation</h3>
+            <textarea id="out-target" rows="5" readonly></textarea>
+          </div>
+        </div>
+        <div id="out-meta" class="meta-row muted"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: PACK STUDIO -->
+    <section class="tab-panel" id="tab-packs">
+      <div class="grid-2col">
+        <div class="card">
+          <div class="card-head">
+            <h2>Доступные Language Packs</h2>
+            <button type="button" class="btn btn-secondary" id="btn-refresh-packs">Обновить</button>
+          </div>
+          <div id="packs-list" class="packs-list"></div>
+        </div>
+
+        <div class="card">
+          <h2>Создать новый Language Pack из шаблонов</h2>
+          <form id="create-pack-form">
+            <div class="split-2">
+              <label class="field">
+                <span>Pack ID (папка, [a-z0-9_-])</span>
+                <input type="text" id="new-pack-id" placeholder="mt_hl" required pattern="[a-z0-9_-]+" />
+              </label>
+              <label class="field">
+                <span>Название языка</span>
+                <input type="text" id="new-pack-name" placeholder="Mushoku Tensei [HL]" required />
+              </label>
+            </div>
+            <div class="split-3">
+              <label class="field">
+                <span>Класс задачи</span>
+                <select id="new-pack-class">
+                  <option value="cipher">cipher (шифр)</option>
+                  <option value="conlang" selected>conlang (вымышленный)</option>
+                  <option value="natural">natural (редкий/исторический)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Рендерер синтетики</span>
+                <select id="new-pack-renderer">
+                  <option value="sprites">sprites (glyphs/ PNG)</option>
+                  <option value="font">font (.ttf / .otf)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Направление письма</span>
+                <select id="new-pack-direction">
+                  <option value="ltr">ltr (слева направо)</option>
+                  <option value="rtl">rtl (справа налево)</option>
+                  <option value="ttb">ttb (сверху вниз)</option>
+                </select>
+              </label>
+            </div>
+            <label class="checkbox-row">
+              <input type="checkbox" id="new-pack-postprocess" />
+              <span>Создать шаблон <code>postprocess.py</code> (промежуточный слой)</span>
+            </label>
+            <button type="submit" class="btn btn-primary">Создать пакет</button>
+          </form>
+          <div id="create-pack-result" class="status-banner hidden mt-12"></div>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <h2>Отчёт валидации и детали пакета</h2>
+        <div id="pack-validation-details" class="muted">Выберите пакет в списке слева и нажмите «Validate / Inspect».</div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SYNTH & TRAIN -->
+    <section class="tab-panel" id="tab-synth">
+      <div class="grid-2col">
+        <div class="card">
+          <h2>Живое превью генератора синтетики</h2>
+          <div class="split-2">
+            <label class="field">
+              <span>Language Pack</span>
+              <select id="synth-pack"></select>
+            </label>
+            <label class="field">
+              <span>Переключатель рендерера</span>
+              <select id="synth-renderer">
+                <option value="">Auto (из manifest.yaml)</option>
+                <option value="sprites">sprites (glyphs/ PNG)</option>
+                <option value="font">font (.ttf / .otf)</option>
+              </select>
+            </label>
+          </div>
+          <label class="field">
+            <span>Текст для рендеринга</span>
+            <input type="text" id="synth-text" value="hello world" />
+          </label>
+          <div class="split-2">
+            <label class="field">
+              <span>Фон / текстура</span>
+              <select id="synth-bg">
+                <option value="parchment">parchment (пергамент)</option>
+                <option value="clean">clean (чистая бумага)</option>
+                <option value="dark_leather">dark_leather (тёмная обложка)</option>
+                <option value="noisy_paper">noisy_paper (шумная бумага)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Seed</span>
+              <input type="number" id="synth-seed" value="42" />
+            </label>
+          </div>
+
+          <div class="sliders-grid">
+            <label class="field">
+              <span>Поворот (°): <strong id="val-rot">8</strong></span>
+              <input type="range" id="aug-rot" min="0" max="30" step="1" value="8" />
+            </label>
+            <label class="field">
+              <span>Перспектива: <strong id="val-persp">0.08</strong></span>
+              <input type="range" id="aug-persp" min="0" max="0.28" step="0.01" value="0.08" />
+            </label>
+            <label class="field">
+              <span>Курсив (shear °): <strong id="val-shear">5</strong></span>
+              <input type="range" id="aug-shear" min="0" max="20" step="1" value="5" />
+            </label>
+            <label class="field">
+              <span>Эластик. почерк: <strong id="val-elastic">2.0</strong></span>
+              <input type="range" id="aug-elastic" min="0" max="8" step="0.5" value="2.0" />
+            </label>
+            <label class="field">
+              <span>Размытие (sigma): <strong id="val-blur">0.6</strong></span>
+              <input type="range" id="aug-blur" min="0" max="2.5" step="0.1" value="0.6" />
+            </label>
+            <label class="field">
+              <span>Вероятн. зачёркивания: <strong id="val-strike">0.15</strong></span>
+              <input type="range" id="aug-strike" min="0" max="1" step="0.05" value="0.15" />
+            </label>
+            <label class="field">
+              <span>Вероятн. перекрытия: <strong id="val-occ">0.15</strong></span>
+              <input type="range" id="aug-occ" min="0" max="1" step="0.05" value="0.15" />
+            </label>
+            <label class="field">
+              <span>Свет / блики: <strong id="val-light">0.25</strong></span>
+              <input type="range" id="aug-light" min="0" max="0.7" step="0.05" value="0.25" />
+            </label>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="btn-synth-preview">Обновить превью</button>
+          <div id="synth-error" class="status-banner error hidden mt-12"></div>
+        </div>
+
+        <div class="card">
+          <h2>Превью синтетического сэмпла и план обучения</h2>
+          <div class="preview-box">
+            <img id="synth-preview-img" alt="Synthetic preview" />
+          </div>
+
+          <h3 class="mt-16">Конфигуратор обучения и генерации датасета</h3>
+          <div class="split-2">
+            <label class="field">
+              <span>Режим обучения</span>
+              <select id="train-mode">
+                <option value="onnx_ocr">ONNX OCR (PARSeq/SVTR)</option>
+                <option value="vlm_lora">VLM LoRA (Qwen2.5-VL + Vision)</option>
+                <option value="conlang_lora">Conlang Text LoRA (Source → EN)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Эпохи</span>
+              <input type="number" id="train-epochs" value="10" min="1" max="200" />
+            </label>
+          </div>
+          <label class="field">
+            <span>Путь к датасету (`labels.jsonl` или `conlang_lora.jsonl`)</span>
+            <input type="text" id="train-dataset-path" value="datasets/_example_demo/labels.jsonl" />
+          </label>
+          <label class="field">
+            <span>Папка чекпойнтов (`output_dir`)</span>
+            <input type="text" id="train-output-dir" value="outputs/_example_demo" />
+          </label>
+          <button type="button" class="btn btn-secondary" id="btn-train-plan">Проверить готовность к обучению</button>
+          <pre id="train-plan-out" class="code-box mt-12"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: SETTINGS -->
+    <section class="tab-panel" id="tab-settings">
+      <div class="grid-2col">
+        <div class="card">
+          <h2>Пути и OpenAI-совместимый LLM-сервер</h2>
+          <form id="settings-form">
+            <label class="field">
+              <span>packs_dir</span>
+              <input type="text" id="set-packs-dir" />
+            </label>
+            <label class="field">
+              <span>models_dir</span>
+              <input type="text" id="set-models-dir" />
+            </label>
+            <label class="field">
+              <span>datasets_dir</span>
+              <input type="text" id="set-datasets-dir" />
+            </label>
+            <div class="split-2">
+              <label class="field">
+                <span>Device</span>
+                <select id="set-device">
+                  <option value="auto">auto</option>
+                  <option value="cuda">cuda</option>
+                  <option value="cpu">cpu</option>
+                  <option value="dml">dml (DirectML)</option>
+                  <option value="mps">mps (Apple)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>default_target_lang</span>
+                <input type="text" id="set-target-lang" value="ru" />
+              </label>
+            </div>
+            <label class="field">
+              <span>LLM Base URL (llama-server / Ollama / vLLM / API)</span>
+              <input type="text" id="set-llm-url" />
+            </label>
+            <div class="split-2">
+              <label class="field">
+                <span>LLM Model ID</span>
+                <input type="text" id="set-llm-model" />
+              </label>
+              <label class="field">
+                <span>API Key</span>
+                <input type="text" id="set-llm-key" />
+              </label>
+            </div>
+            <div class="row-actions">
+              <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+              <button type="button" class="btn btn-secondary" id="btn-test-llm">Test LLM Connection</button>
+            </div>
+          </form>
+          <div id="settings-status" class="status-banner hidden mt-12"></div>
+        </div>
+
+        <div class="card">
+          <h2>Статус окружения и бэкендов</h2>
+          <pre id="capabilities-box" class="code-box"></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
