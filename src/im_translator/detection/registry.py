@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from im_translator.core.paths import format_display_path
 from im_translator.core.schemas import DetectorType
 from im_translator.detection.base import TextDetector
 from im_translator.detection.craft import CRAFTDetector
@@ -39,7 +40,7 @@ def list_detectors_status(models_dir: Path) -> list[dict[str, Any]]:
         statuses.append(
             {
                 "detector": det_type.value,
-                "model_path": str(det.model_path),
+                "model_path": format_display_path(det.model_path),
                 "weights_present": det.is_available,
                 "onnxruntime_installed": ort_installed,
                 "ready": bool(det.is_available and ort_installed),

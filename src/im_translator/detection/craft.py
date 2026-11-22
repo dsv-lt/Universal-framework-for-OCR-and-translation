@@ -9,6 +9,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from im_translator.core.paths import format_display_path
 from im_translator.core.schemas import (
     DetectedRegion,
     DetectionConfig,
@@ -32,7 +33,7 @@ class CRAFTDetector(TextDetector):
             return self._session
         if not self.is_available:
             raise ModelNotInstalledError(
-                f"CRAFT ONNX model not found at '{self.model_path}'. "
+                f"CRAFT ONNX model not found at '{format_display_path(self.model_path)}'. "
                 "Place craft.onnx in your models_dir/detectors/ directory."
             )
         try:

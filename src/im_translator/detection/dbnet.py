@@ -9,6 +9,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from im_translator.core.paths import format_display_path
 from im_translator.core.schemas import (
     DetectedRegion,
     DetectionConfig,
@@ -33,7 +34,7 @@ class DBNetDetector(TextDetector):
             return self._session
         if not self.is_available:
             raise ModelNotInstalledError(
-                f"DBNet++ ONNX model not found at '{self.model_path}'. "
+                f"DBNet++ ONNX model not found at '{format_display_path(self.model_path)}'. "
                 "Place dbnet.onnx in your models_dir/detectors/ directory."
             )
         try:
@@ -49,14 +50,16 @@ class DBNetDetector(TextDetector):
 
     @staticmethod
     def preprocess(image: np.ndarray, max_side: int = 1280) -> tuple[np.ndarray, float, float]:
-        """Resize image to multiple of 32 and normalize (NCHW float32)."""
+        """Resize RGB image to multiple of 32, convert RGB->BGR (PaddleOCR/DBNet convention), and normalize."""
         h, w = image.shape[:2]
         scale = min(max_side / max(h, w), 1.0)
         target_h = max(32, int(math.ceil((h * scale) / 32.0) * 32))
         target_w = max(32, int(math.ceil((w * scale) / 32.0) * 32))
 
         resized = cv2.resize(image, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
-        img_f = resized.astype(np.float32) / 255.0
+        # Convert RGB input to BGR as expected by standard PaddleOCR DBNet ONNX weights
+        resized_bgr = resized[:, :, ::-1]
+        img_f = resized_bgr.astype(np.float32) / 255.0
         mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
         std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
         norm = (img_f - mean) / std

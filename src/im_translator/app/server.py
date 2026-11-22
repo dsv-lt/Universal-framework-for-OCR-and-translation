@@ -32,7 +32,14 @@ from im_translator.core.schemas import (
     RendererType,
     WritingDirection,
 )
-from im_translator.core.settings import AppSettings, load_settings, save_settings
+from im_translator.core.paths import format_display_path, normalize_user_path
+from im_translator.core.settings import (
+    AppSettings,
+    configure_runtime_caches,
+    detect_project_root,
+    load_settings,
+    save_settings,
+)
 from im_translator.detection.base import ModelNotInstalledError
 from im_translator.detection.dewarp import (
     detect_contours_fallback,
@@ -104,7 +111,9 @@ def _read_upload_rgb(data: bytes) -> np.ndarray:
 def create_app(settings_override: AppSettings | None = None) -> FastAPI:
     """Create and configure the FastAPI application."""
     application = FastAPI(title="im_Translator", version=__version__)
-    application.state.settings = settings_override or load_settings()
+    initial_settings = settings_override or load_settings()
+    configure_runtime_caches(initial_settings)
+    application.state.settings = initial_settings
 
     if STATIC_DIR.is_dir():
         application.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -136,7 +145,11 @@ def create_app(settings_override: AppSettings | None = None) -> FastAPI:
     def list_packs_endpoint() -> dict[str, Any]:
         s = get_settings()
         items: list[dict[str, Any]] = []
-        for pdir in discover_packs(s.packs_path):
+        pack_dirs = sorted(
+            discover_packs(s.packs_path),
+            key=lambda p: (p.name.startswith("_"), p.name.lower()),
+        )
+        for pdir in pack_dirs:
             report = validate_pack(pdir)
             try:
                 pack = load_pack(pdir)
@@ -169,7 +182,7 @@ def create_app(settings_override: AppSettings | None = None) -> FastAPI:
                         "error": str(exc),
                     }
                 )
-        return {"packs_dir": str(s.packs_path), "packs": items}
+        return {"packs_dir": format_display_path(s.packs_path), "packs": items}
 
     @application.get("/api/packs/{pack_id}")
     def get_pack_detail(pack_id: str) -> dict[str, Any]:
@@ -197,7 +210,7 @@ def create_app(settings_override: AppSettings | None = None) -> FastAPI:
     def validate_pack_endpoint(req: ValidatePackRequest) -> dict[str, Any]:
         s = get_settings()
         if req.pack_dir:
-            pdir = Path(req.pack_dir).expanduser().resolve()
+            pdir = normalize_user_path(req.pack_dir, base_dir=s.packs_path)
         elif req.pack_id:
             pdir = (s.packs_path / req.pack_id).resolve()
         else:
@@ -224,7 +237,7 @@ def create_app(settings_override: AppSettings | None = None) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
         report = validate_pack(pdir)
-        return {"pack_dir": str(pdir), "validation": report.model_dump(mode="json")}
+        return {"pack_dir": format_display_path(pdir), "validation": report.model_dump(mode="json")}
 
     @application.post("/api/detect")
     async def detect_endpoint(
@@ -281,7 +294,7 @@ def create_app(settings_override: AppSettings | None = None) -> FastAPI:
         else:
             raise HTTPException(
                 status_code=400,
-                detail=f"Detector ONNX weights missing at '{det_impl.model_path}'. Enable contour fallback or install weights.",
+                detail=f"Detector ONNX weights missing at '{format_display_path(det_impl.model_path)}'. Enable contour fallback or install weights.",
             )
 
         sorted_regions = group_and_sort_regions(raw_regions, direction=direction, granularity=granularity)
@@ -362,20 +375,23 @@ def create_app(settings_override: AppSettings | None = None) -> FastAPI:
     @application.post("/api/train/plan")
     def train_plan_endpoint(req: TrainPlanRequest) -> dict[str, Any]:
         s = get_settings()
+        root_dir = detect_project_root()
+        ds_resolved = str(normalize_user_path(req.dataset_path, base_dir=root_dir))
+        out_resolved = str(normalize_user_path(req.output_dir, base_dir=root_dir))
         try:
             if req.mode == "onnx_ocr":
                 cfg = TrainOnnxOCRConfig(
                     pack_id=req.pack_id,
-                    dataset_path=req.dataset_path,
-                    output_dir=req.output_dir,
+                    dataset_path=ds_resolved,
+                    output_dir=out_resolved,
                     epochs=req.epochs,
                 )
                 return prepare_onnx_ocr_training(cfg, s.packs_path)
             if req.mode == "vlm_lora":
                 cfg_vlm = TrainVLMLoRAConfig(
                     pack_id=req.pack_id,
-                    dataset_path=req.dataset_path,
-                    output_dir=req.output_dir,
+                    dataset_path=ds_resolved,
+                    output_dir=out_resolved,
                     base_model=req.base_model or "Qwen/Qwen2.5-VL-3B-Instruct",
                     epochs=req.epochs,
                 )
@@ -383,8 +399,8 @@ def create_app(settings_override: AppSettings | None = None) -> FastAPI:
             if req.mode == "conlang_lora":
                 cfg_txt = TrainConlangLoRAConfig(
                     pack_id=req.pack_id,
-                    dataset_jsonl=req.dataset_path,
-                    output_dir=req.output_dir,
+                    dataset_jsonl=ds_resolved,
+                    output_dir=out_resolved,
                     base_model=req.base_model or "Qwen/Qwen2.5-7B-Instruct",
                     epochs=req.epochs,
                 )
@@ -395,13 +411,29 @@ def create_app(settings_override: AppSettings | None = None) -> FastAPI:
 
     @application.get("/api/settings")
     def get_settings_endpoint() -> dict[str, Any]:
-        return get_settings().model_dump(mode="json")
+        s = get_settings()
+        formatted = s.model_copy(
+            update={
+                "packs_dir": format_display_path(s.packs_path),
+                "models_dir": format_display_path(s.models_path),
+                "datasets_dir": format_display_path(s.datasets_path),
+            }
+        )
+        return formatted.model_dump(mode="json")
 
     @application.put("/api/settings")
     def update_settings_endpoint(new_settings: AppSettings) -> dict[str, Any]:
-        application.state.settings = new_settings
-        saved_to = save_settings(new_settings)
-        return {"saved_to": str(saved_to), "settings": new_settings.model_dump(mode="json")}
+        formatted = new_settings.model_copy(
+            update={
+                "packs_dir": format_display_path(new_settings.packs_path),
+                "models_dir": format_display_path(new_settings.models_path),
+                "datasets_dir": format_display_path(new_settings.datasets_path),
+            }
+        )
+        configure_runtime_caches(formatted)
+        application.state.settings = formatted
+        saved_to = save_settings(formatted)
+        return {"saved_to": format_display_path(saved_to), "settings": formatted.model_dump(mode="json")}
 
     @application.post("/api/settings/test-llm")
     def test_llm_endpoint(req: Optional[TestLLMRequest] = None) -> dict[str, Any]:

@@ -31,6 +31,10 @@ class TrainVLMLoRAConfig(BaseModel):
     lora_alpha: int = 32
     load_in_4bit: bool = True
     finetune_vision_layers: bool = True
+    max_steps: int | None = None
+    min_pixels: int = 128 * 28 * 28
+    max_pixels: int = 512 * 28 * 28
+    save_steps: int = 100
 
 
 class TrainConlangLoRAConfig(BaseModel):

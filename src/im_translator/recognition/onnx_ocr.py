@@ -12,6 +12,7 @@ import numpy as np
 from PIL import Image
 
 from im_translator.core.pack_loader import LoadedPack
+from im_translator.core.paths import format_display_path
 from im_translator.core.schemas import RecognitionOutput, RecognizerBackend
 from im_translator.detection.base import ModelNotInstalledError
 from im_translator.detection.craft import _select_onnx_providers
@@ -52,12 +53,12 @@ class OnnxOCRRecognizer(TextRecognizer):
             if p is not None and p.is_file():
                 return p
             if p is not None:
-                raise ModelNotInstalledError(f"ONNX OCR model not found at '{p}'.")
+                raise ModelNotInstalledError(f"ONNX OCR model not found at '{format_display_path(p)}'.")
         default_path = (self.models_dir / "ocr" / f"{pack.pack_id}.onnx").resolve()
         if not default_path.is_file():
             raise ModelNotInstalledError(
                 f"ONNX OCR model not found for pack '{pack.pack_id}'. "
-                f"Expected '{default_path}' or recognition.onnx_model_path in manifest.yaml."
+                f"Expected '{format_display_path(default_path)}' or recognition.onnx_model_path in manifest.yaml."
             )
         return default_path
 
