@@ -202,6 +202,8 @@ def run_vlm_lora_training(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     use_cuda = torch.cuda.is_available()
+    if use_cuda and hasattr(torch.cuda, "set_per_process_memory_fraction"):
+        torch.cuda.set_per_process_memory_fraction(0.82)
     dtype = torch.bfloat16 if use_cuda else torch.float32
     bnb_config = (
         BitsAndBytesConfig(
@@ -244,15 +246,12 @@ def run_vlm_lora_training(
         )
     model.config.use_cache = False
 
-    if bnb_config is not None:
-        model = prepare_model_for_kbit_training(
-            model,
-            use_gradient_checkpointing=True,
-            gradient_checkpointing_kwargs={"use_reentrant": False},
-        )
-    else:
-        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
-        model.enable_input_require_grads()
+    for p in model.parameters():
+        p.requires_grad = False
+    model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+    if hasattr(model, "visual") and hasattr(model.visual, "gradient_checkpointing_enable"):
+        model.visual.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+    model.enable_input_require_grads()
 
     def _require_grad_hook(_module: Any, _args: Any, output: Any) -> None:
         if isinstance(output, torch.Tensor) and output.is_floating_point():
@@ -290,7 +289,15 @@ def run_vlm_lora_training(
     )
 
     trainable_params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.AdamW(trainable_params, lr=config.learning_rate, weight_decay=0.01)
+    if use_cuda:
+        try:
+            import bitsandbytes as bnb
+
+            optimizer = bnb.optim.AdamW8bit(trainable_params, lr=config.learning_rate, weight_decay=0.01)
+        except Exception:  # noqa: BLE001
+            optimizer = torch.optim.AdamW(trainable_params, lr=config.learning_rate, weight_decay=0.01)
+    else:
+        optimizer = torch.optim.AdamW(trainable_params, lr=config.learning_rate, weight_decay=0.01)
 
     steps_per_epoch = max(1, math.ceil(len(train_samples) / config.batch_size / config.gradient_accumulation_steps))
     total_opt_steps = config.max_steps if config.max_steps is not None else steps_per_epoch * config.epochs
@@ -331,6 +338,7 @@ def run_vlm_lora_training(
     optimizer.zero_grad()
 
     opt_step = 0
+    prev_log_step = 0
     accum_loss = 0.0
     accum_count = 0
     loss_history: list[dict[str, float]] = []
@@ -377,10 +385,15 @@ def run_vlm_lora_training(
                 accum_loss = 0.0
                 accum_count = 0
 
+                if use_cuda:
+                    torch.cuda.empty_cache()
+
                 now = time.time()
-                if opt_step == 1 or opt_step % 10 == 0 or opt_step >= total_opt_steps:
+                if opt_step in (1, 5) or opt_step % 10 == 0 or opt_step >= total_opt_steps:
                     dt = now - t_step
-                    sec_per_step = dt / (1.0 if opt_step == 1 else 10.0)
+                    divisor = float(max(1, opt_step - prev_log_step))
+                    sec_per_step = dt / divisor
+                    prev_log_step = opt_step
                     lr_now = float(scheduler.get_last_lr()[0])
                     print(
                         f"[epoch={epoch + 1} step={opt_step}/{total_opt_steps}] "
