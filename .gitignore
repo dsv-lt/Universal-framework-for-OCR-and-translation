@@ -1,0 +1,39 @@
+# Weights & large binaries
+*.onnx
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.gguf
+*.ckpt
+
+# Per-pack models, checkpoints, datasets, and generated demo glyphs
+packs/*/models/
+packs/*/checkpoints/
+packs/*/datasets/
+packs/_example_demo/glyphs/*.png
+models/
+datasets/
+outputs/
+config.yaml
+
+# Python & environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
+
+# Env & IDE
+.env
+.env.*
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

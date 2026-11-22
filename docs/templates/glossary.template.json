@@ -1,0 +1,26 @@
+[
+  {
+    "term": "ExampleName",
+    "en": "ExampleName",
+    "pos": "proper_noun",
+    "variants": ["ExampleName-en", "ExampleName-i"],
+    "is_proper_noun": true,
+    "notes": "Proper name; preserve spelling and never replace with a common dictionary word."
+  },
+  {
+    "term": "kalma",
+    "en": "lamp / light",
+    "pos": "noun",
+    "variants": ["kalmar", "kalmas"],
+    "is_proper_noun": false,
+    "notes": "Example conlang root noun; plural adds -r."
+  },
+  {
+    "term": "silmë",
+    "en": "starlight",
+    "pos": "noun",
+    "variants": ["silma"],
+    "is_proper_noun": false,
+    "notes": "Poetic register."
+  }
+]

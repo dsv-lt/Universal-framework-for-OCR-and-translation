@@ -1,0 +1,45 @@
+id: "_example_demo"
+name: "Example Rune Cipher (Demo)"
+version: "0.1.0"
+description: "Self-contained demo Language Pack using procedural geometric rune sprites and a ROT13 intermediate cipher layer."
+language_class: "cipher"
+source_lang_code: "demo_rune"
+intermediate_lang_code: "en"
+
+script:
+  direction: "ltr"
+  renderer: "sprites"
+  glyphs_dir: "glyphs"
+  glyphs_meta: "glyphs_meta.yaml"
+  font_path: null
+  script_type: "alphabet"
+  charset: "abcdefghijklmnopqrstuvwxyz"
+  case_sensitive: false
+
+detection:
+  default_detector: "craft"
+  granularity: "line"
+  text_threshold: 0.70
+  link_threshold: 0.40
+  low_text: 0.40
+  db_thresh: 0.30
+  db_box_thresh: 0.60
+  db_unclip_ratio: 1.60
+
+recognition:
+  default_backend: "onnx_ocr"
+  onnx_model_path: null
+  vlm_base_model: "Qwen/Qwen2.5-VL-3B-Instruct"
+  vlm_adapter_path: null
+  vlm_prompt: "Transcribe the geometric demo runes into lowercase Latin letters."
+
+postprocess:
+  enabled: true
+  module_path: "postprocess.py"
+
+translation:
+  pivot_via_en: true
+  glossary_path: "glossary.json"
+  grammar_path: "grammar.md"
+  conlang_lora_path: null
+  lora_base_model: null

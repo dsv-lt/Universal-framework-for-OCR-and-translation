@@ -1,0 +1,187 @@
+default_height: 64
+default_advance_ratio: 0.8
+space_width_ratio: 0.55
+line_height_ratio: 1.35
+glyphs:
+  a:
+    files:
+    - lower_a.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  b:
+    files:
+    - lower_b.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  c:
+    files:
+    - lower_c.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  d:
+    files:
+    - lower_d.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  e:
+    files:
+    - lower_e.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  f:
+    files:
+    - lower_f.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  g:
+    files:
+    - lower_g.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  h:
+    files:
+    - lower_h.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  i:
+    files:
+    - lower_i.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  j:
+    files:
+    - lower_j.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  k:
+    files:
+    - lower_k.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  l:
+    files:
+    - lower_l.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  m:
+    files:
+    - lower_m.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  n:
+    files:
+    - lower_n.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  o:
+    files:
+    - lower_o.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  p:
+    files:
+    - lower_p.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  q:
+    files:
+    - lower_q.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  r:
+    files:
+    - lower_r.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  s:
+    files:
+    - lower_s.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  t:
+    files:
+    - lower_t.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  u:
+    files:
+    - lower_u.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  v:
+    files:
+    - lower_v.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  w:
+    files:
+    - lower_w.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  x:
+    files:
+    - lower_x.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  y:
+    files:
+    - lower_y.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false
+  z:
+    files:
+    - lower_z.png
+    baseline_offset: 0.0
+    scale: 1.0
+    advance_ratio: null
+    is_combining: false

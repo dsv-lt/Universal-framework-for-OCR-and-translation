@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=69.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "im-translator"
+version = "0.1.0"
+description = "Universal modular framework for OCR and translation of fictional, ciphered, and rare writing systems via Language Packs"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "pillow>=10.3",
+    "numpy>=1.26",
+    "opencv-python-headless>=4.9",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+    "httpx>=0.27",
+    "typer>=0.12",
+    "rich>=13.7",
+]
+
+[project.optional-dependencies]
+onnx = [
+    "onnxruntime>=1.19",
+]
+vlm = [
+    "torch>=2.5",
+    "transformers>=4.49",
+    "peft>=0.14",
+    "accelerate>=1.2",
+]
+train = [
+    "datasets>=3.0",
+    "jiwer>=3.0",
+    "tensorboard>=2.17",
+]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+im-translator = "im_translator.cli.main:app"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+im_translator = ["app/static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

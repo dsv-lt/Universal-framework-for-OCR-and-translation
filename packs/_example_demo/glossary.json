@@ -1,0 +1,18 @@
+[
+  {
+    "term": "Aethelgard",
+    "en": "Aethelgard",
+    "pos": "proper_noun",
+    "variants": ["Aethelgard's"],
+    "is_proper_noun": true,
+    "notes": "Fictional demo citadel name; preserve verbatim."
+  },
+  {
+    "term": "silva",
+    "en": "forest / grove",
+    "pos": "noun",
+    "variants": ["silvae"],
+    "is_proper_noun": false,
+    "notes": "Demo lexical entry."
+  }
+]

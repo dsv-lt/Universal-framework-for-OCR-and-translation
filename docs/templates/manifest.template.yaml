@@ -1,0 +1,104 @@
+# ==============================================================================
+# Шаблон паспорта Language Pack (manifest.yaml)
+# Скопируйте в packs/<pack_id>/manifest.yaml и отредактируйте под свой язык.
+# ==============================================================================
+
+# Уникальный идентификатор пакета (совпадает с именем папки; только [a-z0-9_-])
+id: "my_pack"
+
+# Человекочитаемое название в UI и CLI
+name: "My Fictional / Rare Language"
+
+# Версия пакета (SemVer)
+version: "0.1.0"
+
+# Краткое описание языка и источника
+description: "Template language pack for im_Translator."
+
+# Класс задачи:
+#   cipher  — шифр/альтернативная письменность реального языка (нужен postprocess.py)
+#   conlang — полноценный вымышленный язык (словарь + грамматика / Text LoRA)
+#   natural — малоресурсный или редкий исторический язык
+language_class: "conlang"
+
+# Код исходного языка или письменности (например: mt_hl, qya, tlh)
+source_lang_code: "conlang"
+
+# Код языка после промежуточного слоя (например, "eu" для баскского). Для conlang оставьте null.
+intermediate_lang_code: null
+
+script:
+  # Направление письма: ltr | rtl | ttb
+  direction: "ltr"
+
+  # Способ рендеринга синтетического датасета:
+  #   sprites — папка glyphs/ с прозрачными PNG-буквами + glyphs_meta.yaml
+  #   font    — векторный шрифт .ttf / .otf
+  renderer: "sprites"
+
+  # Для renderer: "sprites"
+  glyphs_dir: "glyphs"
+  glyphs_meta: "glyphs_meta.yaml"
+
+  # Для renderer: "font" (если выбран sprites, поле игнорируется)
+  font_path: "font.ttf"
+
+  # Тип системы письма: alphabet | abugida | abjad | syllabary | logography | cursive
+  script_type: "alphabet"
+
+  # Полный набор символов, который должен распознавать OCR и генерировать синтетик
+  charset: "abcdefghijklmnopqrstuvwxyz"
+
+  # Учитывать ли регистр букв
+  case_sensitive: false
+
+detection:
+  # Детектор по умолчанию: craft | dbnet (можно переключать прямо в Web UI)
+  default_detector: "craft"
+
+  # Гранулярность нарезки:
+  #   line  — отдельные строки (для лёгких построчных OCR: ONNX PARSeq / SVTR / TrOCR)
+  #   block — текстовые блоки/страницы (для VLM-бэкендов)
+  granularity: "line"
+
+  # Пороги CRAFT
+  text_threshold: 0.70
+  link_threshold: 0.40
+  low_text: 0.40
+
+  # Пороги DBNet++
+  db_thresh: 0.30
+  db_box_thresh: 0.60
+  db_unclip_ratio: 1.60
+
+recognition:
+  # Бэкенд распознавания по умолчанию: onnx_ocr | vlm_peft | vlm_llamacpp
+  default_backend: "onnx_ocr"
+
+  # Относительный или абсолютный путь к ONNX-модели OCR (для onnx_ocr)
+  onnx_model_path: null
+
+  # Базовая VLM и LoRA-адаптер (для vlm_peft)
+  vlm_base_model: "Qwen/Qwen2.5-VL-3B-Instruct"
+  vlm_adapter_path: null
+
+  # Промпт для VLM-распознавателей
+  vlm_prompt: "Transcribe the text shown in the image accurately. Output only the transcribed text."
+
+postprocess:
+  # Включить ли промежуточный слой (например, расшифровку Атбаша или чисел).
+  # Если false — распознанный текст передаётся сразу в переводчик.
+  enabled: false
+  module_path: "postprocess.py"
+
+translation:
+  # Пивот через английский: [Source] -> EN -> [Target]
+  pivot_via_en: true
+
+  # Файлы для GlossaryRAG и системного промпта (относительно папки пакета)
+  glossary_path: "glossary.json"
+  grammar_path: "grammar.md"
+
+  # Опциональная текстовая LoRA [Conlang -> EN] (для больших параллельных корпусов)
+  conlang_lora_path: null
+  lora_base_model: null
